@@ -1,5 +1,5 @@
 import requests
-
+from openai import OpenAI
 
 class GetFileRequest():
     def get_file(url):
@@ -44,8 +44,40 @@ class ReadFile():
         with open(file_path, 'r', encoding='utf-8') as file:
             return file.read()
 
+class OpenAIRequest:
+    def __init__(self, api_key, article_content):
+        self._api_key = api_key
+        self._article_content = article_content
+
+    def generate_html(self):
+        prompt = '''
+            ### Instrukcje do zadania:
+                Przekształć poniższą treść artykułu na HTML z odpowiednimi nagłówkami, akapitami oraz miejscami na ilustracje. 
+                Dodaj tagi <img> z atrybutem src='image_placeholder(tutaj nmuer ktore to zdjecie np. 1, 2 itd.).jpg' i atrybutem alt opisującym obrazek. 
+                Umieść podpisy pod grafikami w tagu <figcaption>. Nie dodawaj CSS ani JS.
+            ### Wytyczne do zadania: 
+            - Kod HTML jest przeznaczony wyłącznie do wklejenia wewnątrz tagów `<body>` i nie zawiera tagów <body></body>
+            - do not add ```html in start and ``` in the end in output            
+            ### Treść do przetworzenia:
+                '''f'''{self._article_content}'''
+        
+        client = OpenAI(
+            api_key = self._api_key
+        )
+        chat = client.chat.completions.create(
+            messages=[{
+                "role": "user",
+                "content": prompt,
+                }    
+            ],
+            model="gpt-4o-mini",
+            max_tokens=2000
+        )
+        return chat.choices[0].message.content
+
+
 url = "https://cdn.oxido.pl/hr/Zadanie%20dla%20JJunior%20AI%20Developera%20-%20tresc%20artykulu.txt"
 
 content_file = GetFileRequest.get_file(url)
 file_path = "artykul.txt"
-SaveFile.save(file_path, content_file)
+SaveFileTXT.save(file_path, content_file)
