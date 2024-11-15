@@ -73,7 +73,8 @@ class OpenAIRequest:
                 }    
             ],
             model="gpt-4o-mini",
-            max_tokens=2000
+            max_tokens=2000,
+            temperature=0.05
         )
         return chat.choices[0].message.content
 
@@ -153,32 +154,44 @@ class FileSaver:
         except IOError as e:
             print(f"Error saving file: {e}")
 
-url = "https://cdn.oxido.pl/hr/Zadanie%20dla%20JJunior%20AI%20Developera%20-%20tresc%20artykulu.txt"
-content_file = GetFileRequest.get_file(url)
-file_path = "artykul.txt"
-SaveFileTXT(file_path, content_file).save()
-API_KEY = ReadFile.read("API_KEY")
-article = ReadFile.read("artykul.txt")
-generated_AI = OpenAIRequest(API_KEY, article).generate_html()
-#print(generated_AI)
-file_path = "artykul.html"
-SaveFileHTML(file_path, generated_AI).save()
 
 
-article = ReadFile.read("artykul.html")
-prompt_extractor = GetPromptForImage(article)
-prompts = prompt_extractor.extract_prompts()
-print("Extracted Prompts:", prompts)
-image_generator = CreateImagesOpenAI(API_KEY, prompts)
-images = image_generator.create_image()
+def main():
+    # Step 1: Download the article content
+    url = "https://cdn.oxido.pl/hr/Zadanie%20dla%20JJunior%20AI%20Developera%20-%20tresc%20artykulu.txt"
+    content_file = GetFileRequest.get_file(url)
+    file_path = "artykul.txt"
+    SaveFileTXT(file_path, content_file).save()
 
-for x, (prompt, url) in enumerate(images, start=1):
-    print(f"Prompt: {prompt}\nGenerated Image URL: {url}")
-    file_path = f"image_placeholder{x}.jpg"
-    downloader = ImageDownloader(url)
-    image_data = downloader.download_image()  
-    if image_data:
-        saver = FileSaver(file_path)
-        saver.save_file(image_data)
-    else:
-        print(f"Failed to download image from: {url}")
+    # Step 2: Read the article and generate HTML using OpenAI
+    API_KEY = ReadFile.read("API_KEY")
+    article = ReadFile.read("artykul.txt")
+    generated_AI = OpenAIRequest(API_KEY, article).generate_html()
+
+    # Step 3: Save the generated HTML content to a file
+    file_path = "artykul.html"
+    SaveFileHTML(file_path, generated_AI).save()
+
+    # Step 4: Extract prompts from the generated HTML content
+    article = ReadFile.read("artykul.html")
+    prompt_extractor = GetPromptForImage(article)
+    prompts = prompt_extractor.extract_prompts()
+    print("Extracted Prompts:", prompts)
+
+    # Step 5: Generate images from the extracted prompts
+    image_generator = CreateImagesOpenAI(API_KEY, prompts)
+    images = image_generator.create_image()
+
+    # Step 6: Download and save the generated images
+    for x, (prompt, url) in enumerate(images, start=1):
+        print(f"Prompt: {prompt}\nGenerated Image URL: {url}")
+        file_path = f"image_placeholder{x}.jpg"
+        downloader = ImageDownloader(url)
+        image_data = downloader.download_image()  
+        if image_data:
+            saver = FileSaver(file_path)
+            saver.save_file(image_data)
+        else:
+            print(f"Failed to download image from: {url}")
+
+main()
