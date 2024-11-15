@@ -80,4 +80,10 @@ url = "https://cdn.oxido.pl/hr/Zadanie%20dla%20JJunior%20AI%20Developera%20-%20t
 
 content_file = GetFileRequest.get_file(url)
 file_path = "artykul.txt"
-SaveFileTXT.save(file_path, content_file)
+SaveFileTXT(file_path, content_file).save()
+API_KEY = ReadFile.read("API_KEY")
+article = ReadFile.read("artykul.txt")
+generated_AI = OpenAIRequest(API_KEY, article).generate_html()
+#print(generated_AI)
+file_path = "artykul.html"
+SaveFileHTML(file_path, generated_AI).save()
