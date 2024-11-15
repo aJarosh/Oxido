@@ -39,6 +39,10 @@ class SaveFileHTML:
         except IOError as e:
             print(f"Error ocured during saving: {e}")
 
+class ReadFile():
+    def read(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
 
 url = "https://cdn.oxido.pl/hr/Zadanie%20dla%20JJunior%20AI%20Developera%20-%20tresc%20artykulu.txt"
 
